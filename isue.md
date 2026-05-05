@@ -4,7 +4,7 @@ Dokumen ini berisi daftar tugas, bug, dan fitur yang harus dikerjakan untuk proy
 
 ## 🚨 To Do (Prioritas Tinggi)
 
-- (Belum ada tugas baru)
+- [ ] **[DEVOPS] Cloud Deployment**: Deploy layanan ke Google Cloud Run dan hubungkan Frontend ke URL Backend Production.
 
 ## ⏳ In Progress (Sedang Dikerjakan)
 
@@ -13,6 +13,7 @@ Dokumen ini berisi daftar tugas, bug, dan fitur yang harus dikerjakan untuk proy
 ## ✅ Selesai (Completed)
 
 - [x] **[AI/ML] Integrasikan Meta Prophet**
+- [x] **[DEVOPS] Containerization (Dockerfile Backend & Frontend)**
 - [x] **[KEAMANAN] Enkripsi AES-256 (Zero-Knowledge)**
 - [x] **[INTEGRASI] Endpoint Open Banking (SNAP API)**
 - [x] **[FRONTEND] Dashboard React.js (The Oracle Forecast)**

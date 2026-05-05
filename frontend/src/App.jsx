@@ -10,7 +10,7 @@ import {
   LayoutDashboard, PieChart, Settings, LogOut, Menu, X
 } from 'lucide-react';
 
-const API_BASE_URL = 'http://localhost:8000/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
 
 // --- Custom Recharts Tooltip ---
 const CustomTooltip = ({ active, payload, label, themeColor }) => {
@@ -157,7 +157,10 @@ const App = () => {
       </AnimatePresence>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto p-4 lg:p-10 relative z-10 w-full">
+      <main 
+        className="flex-1 overflow-y-auto p-4 lg:p-10 relative z-10 w-full lg:ml-64"
+        style={{ marginLeft: window.innerWidth >= 1024 ? '16rem' : '0' }}
+      >
         
         {/* Top Header */}
         <motion.div 
@@ -248,7 +251,7 @@ const App = () => {
                 </div>
               </div>
 
-              <div className="h-64 lg:h-80 w-full">
+              <div className="h-64 lg:h-80 w-full min-h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={forecast}>
                     <defs>

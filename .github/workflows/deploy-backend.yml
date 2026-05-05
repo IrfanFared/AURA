@@ -1,0 +1,51 @@
+name: Deploy Backend to Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }} # Set this in GitHub Secrets
+  REGION: asia-southeast2 # Jakarta, ubah jika perlu
+  SERVICE_NAME: aura-backend
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Google Auth
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker asia-southeast2-docker.pkg.dev
+
+      - name: Build and Push Container
+        run: |
+          cd backend
+          docker build -t asia-southeast2-docker.pkg.dev/${{ env.PROJECT_ID }}/aura-repo/${{ env.SERVICE_NAME }}:${{ github.sha }} .
+          docker push asia-southeast2-docker.pkg.dev/${{ env.PROJECT_ID }}/aura-repo/${{ env.SERVICE_NAME }}:${{ github.sha }}
+
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ env.SERVICE_NAME }}
+          region: ${{ env.REGION }}
+          image: asia-southeast2-docker.pkg.dev/${{ env.PROJECT_ID }}/aura-repo/${{ env.SERVICE_NAME }}:${{ github.sha }}
+          flags: |
+            --allow-unauthenticated

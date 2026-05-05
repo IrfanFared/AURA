@@ -7,7 +7,8 @@ Dokumen ini mencatat seluruh perubahan, implementasi fitur, dan perbaikan yang t
 ### 🛠️ Manajemen Proyek & Dokumentasi
 - **Dibuat:** `isue.md` sebagai daftar tugas (*checklist*) interaktif untuk melacak progres pengembangan.
 - **Dibuat:** `track_changers.md` (dokumen ini) untuk melacak riwayat perubahan kode.
-- **Git:** Melakukan push awal `isue.md` ke repositori GitHub `IrfanFared/AURA`.
+- [x] **Git:** Melakukan push awal `isue.md` ke repositori GitHub `IrfanFared/AURA`.
+- **Cloud Readiness:** Membuat `Dockerfile` untuk Backend dan Frontend serta menyusun panduan deployment ke Google Cloud Run.
 
 ### 🧠 AI & Analytics (AURA Agent)
 - **Implementasi Meta Prophet:** Menambahkan metode `generate_forecast` pada `app/agent/base_agent.py` untuk prediksi arus kas 14-90 hari dengan *multiplicative seasonality*.

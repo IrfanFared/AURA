@@ -15,7 +15,11 @@ class SmartVaultExecutor:
         """
         if hedge_percentage <= 0:
             logger.info(f"User {user_id}: No hedging required.")
-            return {"status": "skipped", "amount_hedged": 0}
+            return {
+                "status": "skipped", 
+                "amount_hedged": 0,
+                "vault_balance": self.active_vaults.get(user_id, 0.0)
+            }
             
         amount_to_hedge = daily_income * hedge_percentage
         
