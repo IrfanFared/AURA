@@ -10,3 +10,4 @@ python-dateutil
 pytest
 httpx
 pytest-asyncio
+cryptography

@@ -32,7 +32,7 @@ def test_create_transaction(db_session):
     db_session.commit()
     
     db_txn = db_session.query(Transaction).first()
-    assert db_txn.amount == Decimal("100.50")
+    assert Decimal(db_txn.amount) == Decimal("100.50")
     assert db_txn.type == "income"
 
 def test_transaction_query_filter(db_session):
@@ -46,4 +46,4 @@ def test_transaction_query_filter(db_session):
     
     incomes = db_session.query(Transaction).filter(Transaction.type == "income").all()
     assert len(incomes) == 2
-    assert sum(t.amount for t in incomes) == Decimal("300")
+    assert sum(Decimal(t.amount) for t in incomes) == Decimal("300")

@@ -40,3 +40,21 @@ def test_model_zero_variance_fix():
         assert decision.zone == "Aman"
     except Exception as e:
         pytest.fail(f"Agent failed on zero variance: {e}")
+
+def test_model_extreme_crisis():
+    """
+    Test how the agent reacts to an extreme, continuous drop in revenue (e.g., pandemic).
+    This simulates the Skenario Krisis Lanjutan.
+    """
+    agent = AuraAgent(critical_threshold=2500000.0)
+    
+    # 5 days of normal income
+    incomes = [5000000.0] * 5
+    # Followed by 25 days of almost zero income
+    incomes += [50000.0] * 25
+    
+    prediction, decision = agent.process(incomes)
+    
+    # With this much drop, the probability of deficit should be very high
+    assert prediction.probability_deficit > 0.80
+    assert decision.zone in ["Bahaya", "Darurat"]

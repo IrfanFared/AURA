@@ -32,6 +32,31 @@ class AuraAgent:
             threshold_used=self.critical_threshold
         )
 
+    def generate_forecast(self, historical_data: pd.DataFrame, periods: int = 30) -> pd.DataFrame:
+        """
+        Generate future cash flow predictions using an ENSEMBLE approach (Prophet + Moving Average).
+        This improves accuracy during volatile periods (Risiko R07).
+        """
+        from prophet import Prophet
+        import logging
+        logging.getLogger('cmdstanpy').setLevel(logging.WARNING) # Suppress prophet logs
+        
+        # 1. Meta Prophet Prediction
+        model = Prophet(seasonality_mode='multiplicative', yearly_seasonality=False)
+        model.fit(historical_data)
+        future = model.make_future_dataframe(periods=periods)
+        forecast = model.predict(future)
+        prophet_res = forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].tail(periods)
+
+        # 2. Simple Moving Average (Baseline) for Ensemble weighting
+        # In production, this would be ARIMA or LSTM
+        sma_val = historical_data['y'].tail(7).mean()
+        
+        # 3. Ensemble Weighting (70% Prophet, 30% Baseline/Moving Average)
+        prophet_res['yhat'] = (prophet_res['yhat'] * 0.7) + (sma_val * 0.3)
+        
+        return prophet_res
+
     def determine_hedge(self, prediction: PredictionResult) -> HedgingDecision:
         prob = prediction.probability_deficit
         
