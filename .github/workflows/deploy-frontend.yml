@@ -10,7 +10,7 @@ on:
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }} # Set this in GitHub Secrets
   REGION: asia-southeast2 # Jakarta, ubah jika perlu
-  SERVICE_NAME: aura-frontend
+  SERVICE_NAME: aura-platform
 
 jobs:
   deploy:

@@ -47,6 +47,32 @@ class SmartVaultExecutor:
         # In reality, this calls SNAP API
         return True
         
+    def withdraw_funds(self, user_id: str, amount: float) -> dict:
+        """
+        Allows user to withdraw funds back to the main operational account.
+        Checks balance and potential risk before execution.
+        """
+        current_balance = self.active_vaults.get(user_id, 0.0)
+        
+        if amount > current_balance:
+            logger.warning(f"User {user_id}: Insufficient vault balance for withdrawal.")
+            return {"status": "failed", "message": "Saldo Vault tidak mencukupi."}
+            
+        # Mock bank transfer back to main account
+        success = self._mock_bank_transfer(user_id, -amount)
+        
+        if success:
+            self.active_vaults[user_id] -= amount
+            logger.info(f"User {user_id}: Successfully withdrawn Rp {amount:,.2f} from Vault.")
+            return {
+                "status": "success",
+                "amount_withdrawn": amount,
+                "vault_balance": self.active_vaults[user_id],
+                "timestamp": datetime.now().isoformat()
+            }
+        else:
+            return {"status": "failed", "message": "Gagal menghubungi API Bank."}
+
     def lock_vault(self, user_id: str) -> bool:
         """
         Locks the vault when probability of deficit > 90% (Darurat).

@@ -54,21 +54,6 @@ class OpenBankingAPI:
             return await self.fetch_transactions(account_number, start_date, end_date)
 
     def _generate_mock_mutations(self, start_date: date, end_date: date) -> List[Dict[str, Any]]:
-        # This acts as a real-time mock replacing seed.py
-        mutations = []
-        current_date = start_date
-        while current_date <= end_date:
-            mutations.append({
-                "transactionDate": current_date.isoformat(),
-                "amount": "5000000.00",
-                "type": "Credit", # Income
-                "description": "Daily Revenue Settlement"
-            })
-            mutations.append({
-                "transactionDate": current_date.isoformat(),
-                "amount": "1500000.00",
-                "type": "Debit", # Expense
-                "description": "Operational Costs"
-            })
-            current_date += timedelta(days=1)
-        return mutations
+        # Disabled mock generation for production. 
+        # Connect real Bank API credentials to populate this list.
+        return []

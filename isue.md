@@ -8,9 +8,11 @@ Dokumen ini berisi daftar tugas, bug, dan fitur yang harus dikerjakan untuk proy
 
 ## ⏳ In Progress (Sedang Dikerjakan)
 
-- (Belum ada tugas baru)
+- [ ] **[DEVOPS] Cloud Deployment**: Deploy layanan ke Google Cloud Run dan hubungkan Frontend ke URL Backend Production.
 
 ## ✅ Selesai (Completed)
+
+- [x] **[FRONTEND] Multi-page routing/Tab Navigation (Overview, Analytics, Vault, Reports)**
 
 - [x] **[AI/ML] Integrasikan Meta Prophet**
 - [x] **[DEVOPS] Containerization (Dockerfile Backend & Frontend)**

@@ -1,75 +1,156 @@
 @import "tailwindcss";
 
 @theme {
-  --color-aura-primary: #4F46E5;
+  --color-aura-primary: #6366f1;
   --color-aura-secondary: #10B981;
   --color-aura-danger: #EF4444;
   --color-aura-warning: #F59E0B;
-  --color-aura-background: #0F172A;
 }
+
+/* ═══════════════════════════════════════════════════════
+   DESIGN TOKENS — Dark & Light
+   ═══════════════════════════════════════════════════════ */
+
+:root,
+[data-theme="dark"] {
+  /* Surfaces */
+  --surface-0: #030712;      /* deepest background */
+  --surface-1: #0a0f1f;      /* sidebar, cards */
+  --surface-2: #111827;      /* elevated cards */
+  --surface-3: #1e293b;      /* inputs, well */
+
+  /* Text */
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #475569;
+  --text-faint: #334155;
+
+  /* Borders */
+  --border-subtle: rgba(255,255,255,0.06);
+  --border-default: rgba(255,255,255,0.10);
+  --border-strong: rgba(255,255,255,0.18);
+
+  /* Glass */
+  --glass-bg: rgba(15,23,42,0.60);
+  --glass-card-bg: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0) 100%);
+  --glass-card-shadow: 0 8px 32px rgba(0,0,0,0.40);
+
+  /* Accent glow */
+  --glow-primary: rgba(99,102,241,0.08);
+  --glow-secondary: rgba(16,185,129,0.05);
+
+  /* Chart axis */
+  --chart-grid: rgba(255,255,255,0.03);
+  --chart-axis: rgba(255,255,255,0.20);
+  --chart-tooltip-bg: #0f172a;
+
+  /* Misc */
+  --shimmer-color: rgba(255,255,255,0.05);
+  --overlay-bg: rgba(2,6,23,0.80);
+  --ring-focus: rgba(99,102,241,0.40);
+
+  color-scheme: dark;
+}
+
+
+/* ═══════════════════════════════════════════════════════
+   BASE STYLES
+   ═══════════════════════════════════════════════════════ */
 
 :root {
   font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
-  color-scheme: dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #020617; /* Slate 950 */
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-body {
+html, body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: radial-gradient(circle at top left, rgba(79, 70, 229, 0.08) 0%, transparent 40%),
-              radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.05) 0%, transparent 40%);
+  background-color: var(--surface-0);
+  color: var(--text-primary);
+  overflow-x: hidden;
+  transition: background-color 0.35s ease, color 0.35s ease;
+}
+
+body {
+  background-image:
+    radial-gradient(circle at top left, var(--glow-primary) 0%, transparent 40%),
+    radial-gradient(circle at bottom right, var(--glow-secondary) 0%, transparent 40%);
   background-attachment: fixed;
 }
 
-/* Custom Utilities */
+/* ═══════════════════════════════════════════════════════
+   UTILITY CLASSES
+   ═══════════════════════════════════════════════════════ */
+
 .glass {
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
 }
 
 .glass-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0) 100%);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  background: var(--glass-card-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-default);
+  box-shadow: var(--glass-card-shadow);
 }
 
 .hover-glow:hover {
-  box-shadow: 0 0 20px rgba(79, 70, 229, 0.3);
-  border-color: rgba(79, 70, 229, 0.5);
+  box-shadow: 0 0 24px var(--glow-primary);
+  border-color: rgba(99,102,241,0.35);
 }
+
+/* Smooth theme transition on all token-driven props */
+.glass, .glass-card, .hover-glow,
+button, input, select, textarea, a, nav, aside, main, header, div, span, p, h1, h2, h3, h4, h5, h6, table, th, td {
+  transition-property: background-color, border-color, color, box-shadow, opacity;
+  transition-duration: 0.3s;
+  transition-timing-function: ease;
+}
+
+/* ═══════════════════════════════════════════════════════
+   ANIMATIONS
+   ═══════════════════════════════════════════════════════ */
 
 .animate-float {
   animation: float 6s ease-in-out infinite;
 }
-
 @keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+  0%   { transform: translateY(0px); }
+  50%  { transform: translateY(-10px); }
   100% { transform: translateY(0px); }
 }
 
-/* Shimmer Effect for Loading */
 .shimmer {
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+  background: linear-gradient(90deg, transparent, var(--shimmer-color), transparent);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
-
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
+  0%   { background-position: -200% 0; }
   100% { background-position: 200% 0; }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
+}
+
+/* Selection */
+::selection {
+  background: rgba(99,102,241,0.30);
 }

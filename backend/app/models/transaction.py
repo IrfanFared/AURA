@@ -5,7 +5,11 @@ from app.models.base import Base
 
 # In production, this key must be securely stored in environment variables.
 # Generate a key using Fernet.generate_key() if not exists.
-SECRET_ENCRYPTION_KEY = os.environ.get("AURA_ENCRYPTION_KEY", Fernet.generate_key())
+_FALLBACK_DEV_KEY = b'AURA_DEV_KEY_DO_NOT_USE_IN_PROD_32b='
+# Pad to valid Fernet key length (32 bytes base64url-encoded = 44 chars)
+import base64 as _b64
+_STABLE_DEV_KEY = _b64.urlsafe_b64encode(b'aura_stable_dev_secret_key_32byt')
+SECRET_ENCRYPTION_KEY = os.environ.get("AURA_ENCRYPTION_KEY", _STABLE_DEV_KEY.decode()).encode() if isinstance(os.environ.get("AURA_ENCRYPTION_KEY"), str) else _STABLE_DEV_KEY
 cipher_suite = Fernet(SECRET_ENCRYPTION_KEY)
 
 class EncryptedString(TypeDecorator):

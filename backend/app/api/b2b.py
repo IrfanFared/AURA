@@ -38,6 +38,10 @@ async def get_user_score_for_partner(
         # For simplicity, we run a routine
         result = await orchestrator.run_daily_sync(user_id, "1234567890")
         
+        # Log this B2B access for compliance
+        from app.services.audit import AuditLogger
+        AuditLogger.log_sensitive_export(user_id, partner_key, "AURA_SCORE")
+        
         return {
             "user_id": user_id,
             "aura_score": result["score"]["total_score"],
@@ -45,5 +49,6 @@ async def get_user_score_for_partner(
             "dimensions": result["score"]["dimensions"],
             "verified_at": result["score"].get("verified_at", "2026-05-05")
         }
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

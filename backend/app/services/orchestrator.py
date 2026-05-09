@@ -49,14 +49,48 @@ class AuraOrchestrator:
             )
             self.db.add(txn)
         self.db.commit()
-
         # 2. Run Risk Analysis
-        # Fetch last 30 days from DB
-        incomes = [float(m['amount']) for m in mutations if m['type'] == 'Credit']
+        # Fetch all recent transactions from DB
+        db_txns = self.db.query(Transaction).filter(
+            Transaction.date >= start_date,
+            Transaction.date <= end_date
+        ).order_by(Transaction.date).all()
+        
+        # Convert DB models to the expected dictionary format for pandas
+        all_mutations = []
+        for txn in db_txns:
+            all_mutations.append({
+                'transactionDate': txn.date.isoformat(),
+                'amount': float(txn.amount),
+                'type': 'Credit' if txn.type == 'income' else 'Debit',
+                'description': txn.description
+            })
+            
+        incomes = [float(m['amount']) for m in all_mutations if m['type'] == 'Credit']
+        
+        if len(incomes) < 2:
+            from app.schemas.agent import PredictionResult, HedgingDecision
+            prediction = PredictionResult(mean_income=0.0, std_dev_income=0.0, probability_deficit=0.0, threshold_used=self.agent.critical_threshold)
+            decision = HedgingDecision(probability=0.0, zone="Aman", hedging_percentage=0.0, action="Tidak aktif")
+            forecast = pd.DataFrame(columns=['ds', 'yhat', 'yhat_lower', 'yhat_upper'])
+            hedge_result = {"status": "skipped", "message": "Not enough data"}
+            score_result = {
+                "score": 0,
+                "tier": "Belum Cukup Data",
+                "dimensions": {"stability": 0, "growth": 0, "resilience": 0, "liquidity": 0, "predictability": 0}
+            }
+            return {
+                "prediction": prediction,
+                "decision": decision,
+                "forecast": [],
+                "score": score_result,
+                "hedge": hedge_result
+            }
+
         prediction, decision = self.agent.process(incomes)
         
         # 3. Generate Forecast (Prophet)
-        df_history = pd.DataFrame(mutations)
+        df_history = pd.DataFrame(all_mutations)
         df_history = df_history[df_history['type'] == 'Credit']
         df_history = df_history.rename(columns={'transactionDate': 'ds', 'amount': 'y'})
         df_history['y'] = df_history['y'].astype(float)
