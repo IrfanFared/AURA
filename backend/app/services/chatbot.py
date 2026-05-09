@@ -1,25 +1,38 @@
 import os
-import google.generativeai as genai
 import logging
+import google.generativeai as genai
 
 logger = logging.getLogger(__name__)
 
-api_key = os.environ.get("GEMINI_API_KEY")
-if api_key:
-    genai.configure(api_key=api_key)
 
 class ChatbotService:
-    def __init__(self):
-        # Using gemini-1.5-flash for fast chat responses
-        self.model = genai.GenerativeModel('gemini-1.5-flash')
-        
-    def generate_response(self, user_message: str, context: dict) -> str:
+    """AURA Virtual CFO Chatbot powered by Google Gemini."""
+
+    def _get_model(self):
+        """Get a configured Gemini model, reading API key lazily per call."""
+        api_key = os.environ.get("GEMINI_API_KEY")
         if not api_key:
-            return "Maaf, fitur AI Chatbot belum dikonfigurasi (GEMINI_API_KEY tidak ditemukan)."
-            
+            return None, None
+        genai.configure(api_key=api_key)
+        try:
+            model = genai.GenerativeModel("gemini-1.5-flash")
+        except Exception:
+            model = genai.GenerativeModel("gemini-pro")
+        return model, api_key
+
+    def generate_response(self, user_message: str, context: dict) -> str:
+        model, api_key = self._get_model()
+
+        if not api_key or not model:
+            return (
+                "Maaf, fitur AI Chatbot belum dikonfigurasi. "
+                "GEMINI_API_KEY tidak ditemukan di environment."
+            )
+
         system_prompt = f"""
 Anda adalah AURA Assistant, konsultan keuangan virtual (Virtual CFO) untuk UMKM.
-Gunakan bahasa Indonesia yang ramah, profesional, namun mudah dipahami oleh orang awam. Jangan gunakan istilah akuntansi yang terlalu rumit.
+Gunakan bahasa Indonesia yang ramah, profesional, namun mudah dipahami oleh orang awam.
+Jangan gunakan istilah akuntansi yang terlalu rumit.
 Jawablah pertanyaan secara ringkas dan praktis.
 Gunakan markdown untuk menebalkan teks penting atau membuat daftar poin-poin.
 
@@ -34,17 +47,28 @@ Berikut adalah konteks data keuangan pengguna saat ini:
 Panduan menjawab:
 1. Jika pengguna bertanya tentang kas, rujuk pada data di atas.
 2. Jika kas minus, sarankan mereka berhemat. Jika surplus, sarankan menabung di Smart Vault.
-3. Tetap ringkas.
+3. Tetap ringkas dan praktis.
 """
         try:
             prompt = f"{system_prompt}\n\nPertanyaan Pengguna: {user_message}\nJawaban:"
-            response = self.model.generate_content(prompt)
+            response = model.generate_content(prompt)
             return response.text
         except Exception as e:
-            logger.error(f"Chatbot error: {e}")
-            error_str = str(e)
-            if "API has not been used" in error_str or "SERVICE_DISABLED" in error_str:
-                return "Maaf, Gemini API belum diaktifkan di Google Cloud Project Anda. Silakan cek console GCP Anda untuk mengaktifkan Generative Language API."
-            if "API key not valid" in error_str or "API_KEY_INVALID" in error_str:
-                return "Maaf, GEMINI_API_KEY yang digunakan tidak valid. Silakan periksa kembali file .env Anda."
-            return "Maaf, saya sedang mengalami kendala teknis dalam memproses pertanyaan Anda."
+            logger.error(f"Chatbot Gemini error: {e}")
+            err = str(e)
+            if "API has not been used" in err or "SERVICE_DISABLED" in err:
+                return (
+                    "Maaf, Gemini API belum diaktifkan di Google Cloud Project Anda. "
+                    "Silakan aktifkan Generative Language API di GCP Console."
+                )
+            if "API key not valid" in err or "API_KEY_INVALID" in err:
+                return (
+                    "Maaf, GEMINI_API_KEY yang digunakan tidak valid. "
+                    "Silakan periksa kembali konfigurasi environment Anda."
+                )
+            if "quota" in err.lower() or "RESOURCE_EXHAUSTED" in err:
+                return (
+                    "Maaf, kuota Gemini API Anda telah habis. "
+                    "Silakan cek Google AI Studio untuk detail penggunaan."
+                )
+            return "Maaf, saya sedang mengalami kendala teknis. Silakan coba lagi dalam beberapa saat."

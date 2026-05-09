@@ -73,31 +73,65 @@ def health_check():
 
 @router.post("/upload-mutasi/{user_id}")
 async def upload_mutasi(user_id: str, file: UploadFile = File(...), db: Session = Depends(get_db)):
-    """Upload and parse bank mutation using AI."""
+    """Upload and parse bank mutation using Gemini AI Vision."""
+    import logging
+    logger = logging.getLogger(__name__)
+
+    # Validate file type
+    allowed_types = {"image/jpeg", "image/png", "image/webp", "image/heic", "application/pdf"}
+    content_type = file.content_type or ""
+    if content_type not in allowed_types:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Tipe file '{content_type}' tidak didukung. Gunakan JPEG, PNG, atau PDF."
+        )
+
     try:
         contents = await file.read()
+        if len(contents) == 0:
+            raise HTTPException(status_code=400, detail="File kosong. Silakan unggah file yang valid.")
+
         parser = MutationParser()
-        transactions_data = parser.extract_transactions(contents, file.content_type)
-        
+        transactions_data = parser.extract_transactions(contents, content_type)
+
         # Save to DB
         count = 0
         for t_data in transactions_data:
-            txn = Transaction(
-                date=date.fromisoformat(t_data['date']),
-                amount=float(t_data['amount']),
-                type=t_data['type'],
-                description=t_data['description']
-            )
-            db.add(txn)
-            count += 1
-            
+            try:
+                txn = Transaction(
+                    date=date.fromisoformat(t_data['date']),
+                    amount=float(t_data['amount']),
+                    type=t_data['type'],
+                    description=t_data.get('description', '-')
+                )
+                db.add(txn)
+                count += 1
+            except (ValueError, KeyError) as row_err:
+                logger.warning(f"Skipping malformed transaction row: {row_err} — data: {t_data}")
+                continue
+
         db.commit()
-        AuditLogger.log_access(user_id, "ai_parser", "UPLOAD", details=f"AI Extracted {count} transactions from {file.filename}")
-        
-        return {"status": "success", "message": f"Berhasil mengekstrak {count} transaksi.", "transactions": count}
+        AuditLogger.log_access(
+            user_id, "ai_parser", "UPLOAD",
+            details=f"AI Extracted {count} transactions from {file.filename}"
+        )
+
+        return {
+            "status": "success",
+            "message": f"Berhasil mengekstrak {count} transaksi dari mutasi bank Anda.",
+            "transactions": count
+        }
+
+    except HTTPException:
+        raise
+    except ValueError as e:
+        db.rollback()
+        logger.error(f"upload_mutasi ValueError for user {user_id}: {e}")
+        raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"upload_mutasi unexpected error for user {user_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Terjadi kesalahan server: {e}")
 
 # --- Smart Vault endpoints ---
 

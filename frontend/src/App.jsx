@@ -16,7 +16,7 @@ import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-
 import ChatPage from './ChatPage';
 
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1').trim();
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://aura-backend-897592630558.asia-southeast1.run.app/api/v1').trim();
 
 /* ─── Color token helper ──────────────────────────────────────────────────── */
 const getTokens = () => ({
@@ -295,24 +295,34 @@ const App = () => {
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
-    
+
+    // Reset input so the same file can be re-uploaded if needed
+    event.target.value = '';
+
     const formData = new FormData();
     formData.append('file', file);
-    
+
     showToast('AI AURA sedang membaca mutasi Anda...', 'info');
     setLoading(true);
-    
+
     try {
       const response = await axios.post(`${API_BASE_URL}/upload-mutasi/${user.id}`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 60000, // 60s — Gemini Vision can be slow for PDFs
       });
-      showToast(response.data.message, 'success');
-      // Refresh dashboard data
-      const dbRes = await axios.get(`${API_BASE_URL}/dashboard/${user.id}`);
-      setData(dbRes.data);
+      showToast(response.data.message || 'Mutasi berhasil diproses!', 'success');
+      // Refresh dashboard data after successful upload
+      try {
+        const dbRes = await axios.get(`${API_BASE_URL}/dashboard/${user.id}`);
+        setData(dbRes.data);
+      } catch (_) { /* non-critical, data will refresh on next page load */ }
       setShowSettings(false);
     } catch (error) {
-      showToast('Gagal memproses mutasi dengan AI.', 'error');
+      const detail = error.response?.data?.detail;
+      const msg = typeof detail === 'string'
+        ? detail
+        : 'Gagal memproses mutasi. Pastikan file adalah gambar/PDF mutasi bank yang jelas.';
+      showToast(msg, 'error');
     } finally {
       setLoading(false);
     }

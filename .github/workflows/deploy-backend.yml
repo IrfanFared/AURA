@@ -47,5 +47,12 @@ jobs:
           service: ${{ env.SERVICE_NAME }}
           region: ${{ env.REGION }}
           image: asia-southeast1-docker.pkg.dev/${{ env.PROJECT_ID }}/aura-repo/${{ env.SERVICE_NAME }}:${{ github.sha }}
+          env_vars: |
+            GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
+            SECRET_KEY=${{ secrets.SECRET_KEY }}
+            GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+            GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+            GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }}
+            FRONTEND_URL=${{ secrets.FRONTEND_URL }}
           flags: |
             --allow-unauthenticated
