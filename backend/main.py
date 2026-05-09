@@ -32,10 +32,7 @@ def main():
     print("Initializing AURA Database...")
     init_db()
     
-    print("Seeding transaction data (60 days)...")
-    seed_data(days=60)
-    
-    print("\n--- Running AURA Base Agent ---")
+    print("\n--- AURA Analytics Engine Ready ---")
     db = SessionLocal()
     try:
         incomes = get_last_30_days_income(db)

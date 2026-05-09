@@ -6,7 +6,6 @@ from app.models.base import Base
 from app.models.transaction import Transaction
 
 def init_db():
-    Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
 
 def seed_data(days=60):

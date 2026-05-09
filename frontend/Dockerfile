@@ -1,12 +1,9 @@
 # Stage 1: Build
-FROM node:18-alpine as build-stage
+FROM node:22-alpine as build-stage
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
-# URL API Production (bisa diubah saat build)
-ARG VITE_API_BASE_URL
-ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 RUN npm run build
 
 # Stage 2: Serve with Nginx

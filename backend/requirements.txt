@@ -2,6 +2,7 @@ fastapi
 uvicorn
 sqlalchemy
 pydantic
+pydantic[email]
 scipy
 pandas
 prophet
@@ -11,3 +12,10 @@ pytest
 httpx
 pytest-asyncio
 cryptography
+# Auth dependencies
+python-jose[cryptography]
+passlib[bcrypt]
+python-dotenv
+bcrypt==4.0.1
+python-multipart
+google-generativeai
