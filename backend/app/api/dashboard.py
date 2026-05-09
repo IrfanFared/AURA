@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Union
 from datetime import date, timedelta
 from collections import defaultdict
 from app.services.orchestrator import AuraOrchestrator
@@ -30,11 +30,11 @@ DEFAULT_CONFIG = {
 
 # --- Pydantic models for request bodies ---
 class WithdrawRequest(BaseModel):
-    user_id: str
+    user_id: Union[str, int]
     amount: float
 
 class DepositRequest(BaseModel):
-    user_id: str
+    user_id: Union[str, int]
     amount: float
 
 class ConfigUpdate(BaseModel):
@@ -104,14 +104,15 @@ async def upload_mutasi(user_id: str, file: UploadFile = File(...), db: Session 
 @router.post("/vault/withdraw")
 async def withdraw_from_vault(body: WithdrawRequest):
     """Withdraw funds from Smart Vault back to main account."""
-    if body.user_id not in _vault_executor.active_vaults:
-        _vault_executor.active_vaults[body.user_id] = 5000000.0
+    uid = str(body.user_id)
+    if uid not in _vault_executor.active_vaults:
+        _vault_executor.active_vaults[uid] = 5000000.0
     
-    result = _vault_executor.withdraw_funds(body.user_id, body.amount)
+    result = _vault_executor.withdraw_funds(uid, body.amount)
     
     if result["status"] == "success":
         AuditLogger.log_access(
-            body.user_id, "smart_vault", "WITHDRAWAL",
+            uid, "smart_vault", "WITHDRAWAL",
             details=f"Withdrew Rp {body.amount:,.0f} from vault"
         )
         return result
@@ -122,20 +123,21 @@ async def withdraw_from_vault(body: WithdrawRequest):
 @router.post("/vault/deposit")
 async def deposit_to_vault(body: DepositRequest):
     """Manually deposit funds into Smart Vault."""
-    if body.user_id not in _vault_executor.active_vaults:
-        _vault_executor.active_vaults[body.user_id] = 0.0
+    uid = str(body.user_id)
+    if uid not in _vault_executor.active_vaults:
+        _vault_executor.active_vaults[uid] = 0.0
     
-    _vault_executor.active_vaults[body.user_id] += body.amount
+    _vault_executor.active_vaults[uid] += body.amount
     
     AuditLogger.log_access(
-        body.user_id, "smart_vault", "DEPOSIT",
+        uid, "smart_vault", "DEPOSIT",
         details=f"Deposited Rp {body.amount:,.0f} into vault"
     )
     
     return {
         "status": "success",
         "amount_deposited": body.amount,
-        "vault_balance": _vault_executor.active_vaults[body.user_id]
+        "vault_balance": _vault_executor.active_vaults[uid]
     }
 
 

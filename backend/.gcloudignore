@@ -1,0 +1,9 @@
+.gcloudignore
+.git
+.gitignore
+venv/
+node_modules/
+__pycache__/
+*.pyc
+aura.db
+.pytest_cache/

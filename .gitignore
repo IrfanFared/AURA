@@ -1,0 +1,13 @@
+node_modules/
+__pycache__/
+*.pyc
+.env
+.env.local
+.venv/
+venv/
+.pytest_cache/
+.DS_Store
+aura.db
+dist/
+build/
+.gcloudignore

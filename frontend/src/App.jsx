@@ -7,12 +7,13 @@ import {
 import { 
   AlertCircle, Zap, TrendingUp, ArrowUpRight, ArrowDownRight, Wallet, Bell, 
   Activity, Cpu, ShieldAlert, CheckCircle2, ChevronRight, Calendar, Filter,
-  LayoutDashboard, PieChart, Settings, LogOut, Menu, X
+  LayoutDashboard, PieChart, Settings, LogOut, Menu, X, MessageSquare
 } from 'lucide-react';
 import AuthPage from './AuthPage';
 import LandingPage from './LandingPage';
 import { useTheme } from './ThemeContext';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
+import ChatPage from './ChatPage';
 
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1').trim();
@@ -137,7 +138,7 @@ const App = () => {
   // Sync activeTab with URL
   useEffect(() => {
     const path = location.pathname.split('/')[1];
-    const validTabs = ['overview', 'analytics', 'vault', 'reports'];
+    const validTabs = ['overview', 'analytics', 'vault', 'reports', 'chat'];
     if (validTabs.includes(path)) {
       setActiveTab(path);
     } else if (location.pathname === '/dashboard') {
@@ -239,13 +240,15 @@ const App = () => {
     setWithdrawing(true);
     try {
       const response = await axios.post(`${API_BASE_URL}/vault/withdraw`, {
-        user_id: user.id, amount: 1000000
+        user_id: String(user.id), amount: 1000000
       });
       showToast('Rp 1.000.000 berhasil ditarik ke rekening utama Anda.', 'success');
-      setData(prev => ({
-        ...prev,
-        hedge: { ...prev.hedge, vault_balance: response.data.vault_balance }
-      }));
+      if (response.data?.vault_balance !== undefined) {
+        setData(prev => ({
+          ...prev,
+          hedge: { ...prev.hedge, vault_balance: response.data.vault_balance }
+        }));
+      }
     } catch (error) {
       showToast(error.response?.data?.detail || 'Penarikan gagal.', 'error');
     } finally {
@@ -258,13 +261,15 @@ const App = () => {
     setDepositing(true);
     try {
       const response = await axios.post(`${API_BASE_URL}/vault/deposit`, {
-        user_id: user.id, amount: 500000
+        user_id: String(user.id), amount: 500000
       });
       showToast('Rp 500.000 berhasil disetor ke Smart Vault.', 'success');
-      setData(prev => ({
-        ...prev,
-        hedge: { ...prev.hedge, vault_balance: response.data.vault_balance }
-      }));
+      if (response.data?.vault_balance !== undefined) {
+        setData(prev => ({
+          ...prev,
+          hedge: { ...prev.hedge, vault_balance: response.data.vault_balance }
+        }));
+      }
     } catch (error) {
       showToast('Deposit gagal.', 'error');
     } finally {
@@ -440,6 +445,7 @@ const App = () => {
                 { id: 'analytics', icon: <Activity size={20} />, label: 'Analitik Mendalam' },
                 { id: 'vault', icon: <Wallet size={20} />, label: 'Brankas Pintar' },
                 { id: 'reports', icon: <PieChart size={20} />, label: 'Laporan Oracle' },
+                { id: 'chat', icon: <MessageSquare size={20} />, label: 'AURA Assistant' },
               ].map((item) => (
                 <button 
                   key={item.id}
@@ -560,6 +566,10 @@ const App = () => {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
           >
+            {activeTab === 'chat' && (
+              <ChatPage user={user} />
+            )}
+
             {activeTab === 'overview' && timeframe === 'historical' && (
               <div className="space-y-8">
                 {/* Header Banner */}
@@ -1172,24 +1182,26 @@ const App = () => {
   };
 
   return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<LandingPage onNavigateToAuth={() => navigate('/login')} />} />
-        <Route path="/login" element={<AuthPage mode="login" onLogin={handleLogin} onBack={() => navigate('/')} />} />
-        <Route path="/register" element={<AuthPage mode="register" onLogin={handleLogin} onBack={() => navigate('/')} />} />
-        <Route path="/auth/callback" element={<AuthPage mode="callback" onLogin={handleLogin} onBack={() => navigate('/')} />} />
-        
-        {['overview', 'analytics', 'vault', 'reports'].map(tab => (
-          <Route key={tab} path={`/${tab}`} element={isLoggedIn ? renderDashboard() : <Navigate to="/login" />} />
-        ))}
-        
-        <Route path="/dashboard" element={<Navigate to="/overview" replace />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-      <AnimatePresence>
-        {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+    <>
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={<LandingPage onNavigateToAuth={() => navigate('/login')} />} />
+          <Route path="/login" element={<AuthPage mode="login" onLogin={handleLogin} onBack={() => navigate('/')} />} />
+          <Route path="/register" element={<AuthPage mode="register" onLogin={handleLogin} onBack={() => navigate('/')} />} />
+          <Route path="/auth/callback" element={<AuthPage mode="callback" onLogin={handleLogin} onBack={() => navigate('/')} />} />
+          
+          {['overview', 'analytics', 'vault', 'reports', 'chat'].map(tab => (
+            <Route key={tab} path={`/${tab}`} element={isLoggedIn ? renderDashboard() : <Navigate to="/login" />} />
+          ))}
+          
+          <Route path="/dashboard" element={<Navigate to="/overview" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+        <AnimatePresence>
+          {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+        </AnimatePresence>
       </AnimatePresence>
-    </AnimatePresence>
+    </>
   );
 }
 

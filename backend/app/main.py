@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api import dashboard, b2b, auth
+from app.api import dashboard, b2b, auth, chat
 from database.seed import init_db
 from database.session import engine
 from app.models.base import Base
@@ -27,11 +27,11 @@ def startup_event():
     # Buat semua tabel (termasuk tabel users yang baru)
     Base.metadata.create_all(bind=engine)
     init_db()
-
 # Include routers
 app.include_router(auth.router, prefix="/api/v1", tags=["Authentication"])
 app.include_router(dashboard.router, prefix="/api/v1", tags=["Dashboard"])
 app.include_router(b2b.router, prefix="/api/v1", tags=["B2B Partner"])
+app.include_router(chat.router, prefix="/api/v1", tags=["Chatbot"])
 
 @app.get("/")
 def read_root():
