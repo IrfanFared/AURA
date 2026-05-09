@@ -9,7 +9,7 @@ on:
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }} # Set this in GitHub Secrets
-  REGION: asia-southeast2 # Jakarta, ubah jika perlu
+  REGION: asia-southeast1 # Singapore, matching existing services
   SERVICE_NAME: aura-backend
 
 jobs:
@@ -33,19 +33,19 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Configure Docker
-        run: gcloud auth configure-docker asia-southeast2-docker.pkg.dev
+        run: gcloud auth configure-docker asia-southeast1-docker.pkg.dev
 
       - name: Build and Push Container
         run: |
           cd backend
-          docker build -t asia-southeast2-docker.pkg.dev/${{ env.PROJECT_ID }}/aura-repo/${{ env.SERVICE_NAME }}:${{ github.sha }} .
-          docker push asia-southeast2-docker.pkg.dev/${{ env.PROJECT_ID }}/aura-repo/${{ env.SERVICE_NAME }}:${{ github.sha }}
+          docker build -t asia-southeast1-docker.pkg.dev/${{ env.PROJECT_ID }}/aura-repo/${{ env.SERVICE_NAME }}:${{ github.sha }} .
+          docker push asia-southeast1-docker.pkg.dev/${{ env.PROJECT_ID }}/aura-repo/${{ env.SERVICE_NAME }}:${{ github.sha }}
 
       - name: Deploy to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v2
         with:
           service: ${{ env.SERVICE_NAME }}
           region: ${{ env.REGION }}
-          image: asia-southeast2-docker.pkg.dev/${{ env.PROJECT_ID }}/aura-repo/${{ env.SERVICE_NAME }}:${{ github.sha }}
+          image: asia-southeast1-docker.pkg.dev/${{ env.PROJECT_ID }}/aura-repo/${{ env.SERVICE_NAME }}:${{ github.sha }}
           flags: |
             --allow-unauthenticated
