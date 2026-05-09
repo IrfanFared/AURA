@@ -9,7 +9,7 @@ from app.services.orchestrator import AuraOrchestrator
 from app.services.vault import SmartVaultExecutor
 from app.services.audit import AuditLogger
 from app.models.transaction import Transaction
-from database.session import SessionLocal
+from database.session import get_db
 from app.services.ai_parser import MutationParser
 
 router = APIRouter()
@@ -26,14 +26,6 @@ DEFAULT_CONFIG = {
     "notification_level": "high",
     "vault_auto_lock": True
 }
-
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 # --- Pydantic models for request bodies ---

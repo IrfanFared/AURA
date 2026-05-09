@@ -2,7 +2,6 @@ import httpx
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
-from typing import Optional
 
 from app.core.config import settings
 from app.core.security import (
@@ -12,7 +11,7 @@ from app.core.security import (
 from app.models.user import User
 from app.schemas.auth import (
     RegisterRequest, LoginRequest, RefreshTokenRequest,
-    TokenResponse, UserResponse, MessageResponse
+    TokenResponse, UserResponse
 )
 from database.session import get_db
 

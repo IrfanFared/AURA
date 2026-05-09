@@ -2,20 +2,13 @@ from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi.security.api_key import APIKeyHeader
 from sqlalchemy.orm import Session
 from app.services.orchestrator import AuraOrchestrator
-from database.session import SessionLocal
+from database.session import get_db
 
 router = APIRouter()
 
 # Simple API Key security for B2B partners
 API_KEY_NAME = "X-Partner-Key"
 api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 async def get_partner_key(api_key: str = Security(api_key_header)):
     # In production, check against a partners table

@@ -114,6 +114,7 @@ const LandingPage = ({ onNavigateToAuth }) => {
               Mulai Sekarang <ChevronRight size={20} />
             </button>
             <button 
+              onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
               className="px-8 py-4 rounded-2xl font-bold text-lg border hover:bg-white/5 transition-colors flex items-center justify-center gap-2"
               style={{ borderColor: themeConfig.borderColor, color: themeConfig.textPrimary }}
             >
@@ -123,7 +124,7 @@ const LandingPage = ({ onNavigateToAuth }) => {
         </div>
 
         {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 mt-24">
+        <div id="features" className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 mt-24">
           {features.map((feat, index) => (
             <motion.div
               key={feat.id}
