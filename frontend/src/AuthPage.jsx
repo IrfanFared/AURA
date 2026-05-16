@@ -341,8 +341,8 @@ const AuthPage = ({ onLogin, onBack, mode: propMode }) => {
           {/* Logo */}
           <div className="flex flex-col items-center mb-8">
             <div className="relative mb-4">
-              <div className="h-14 w-14 bg-gradient-to-br from-indigo-600 to-violet-700 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                <Zap size={28} className="text-white" />
+              <div className="h-14 w-14 rounded-2xl flex items-center justify-center overflow-hidden">
+                <img src="/aura_logo.png" alt="AURA Logo" className="w-full h-full object-contain" />
               </div>
               <div className="absolute -inset-1 bg-gradient-to-br from-indigo-600/20 to-violet-700/20 rounded-2xl blur-md -z-10" />
             </div>

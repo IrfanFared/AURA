@@ -418,7 +418,7 @@ const App = () => {
       {/* Mobile Navbar */}
       <div className="lg:hidden flex items-center justify-between p-4 z-50 sticky top-0 backdrop-blur-xl" style={{ borderBottom: `1px solid ${t.borderSubtle}`, background: t.glassBg }}>
         <div className="flex items-center gap-2">
-          <Zap size={20} className={theme.color} />
+          <img src="/aura_logo.png" alt="AURA Logo" className="h-6 w-6 object-contain" />
           <span className="font-black italic tracking-widest" style={{ color: t.textPrimary }}>AURA</span>
         </div>
         <div className="flex items-center gap-2">
@@ -440,8 +440,8 @@ const App = () => {
             style={{ borderRight: `1px solid ${t.borderSubtle}`, background: 'rgba(3,7,18,0.95)' }}
           >
             <div className="hidden lg:flex p-8 mb-4 items-center gap-3">
-              <div className={`h-10 w-10 ${theme.bg} rounded-xl flex items-center justify-center shadow-lg`}>
-                <Zap size={24} className={theme.color} />
+              <div className="h-10 w-10 rounded-xl flex items-center justify-center overflow-hidden">
+                <img src="/aura_logo.png" alt="AURA Logo" className="w-full h-full object-contain" />
               </div>
               <span className="text-2xl font-black tracking-tighter uppercase italic" style={{ color: t.textPrimary }}>AURA</span>
             </div>

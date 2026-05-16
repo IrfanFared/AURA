@@ -51,8 +51,8 @@ const LandingPage = ({ onNavigateToAuth }) => {
       {/* Navbar */}
       <nav className="relative z-50 flex items-center justify-between px-6 py-6 lg:px-12 backdrop-blur-sm">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 bg-gradient-to-br from-indigo-600 to-violet-700 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/30">
-            <Zap size={24} className="text-white" />
+          <div className="h-10 w-10 rounded-xl flex items-center justify-center overflow-hidden">
+            <img src="/aura_logo.png" alt="AURA Logo" className="w-full h-full object-contain" />
           </div>
           <span className="text-2xl font-black italic tracking-tighter uppercase" style={{ color: themeConfig.textPrimary }}>AURA</span>
         </div>
