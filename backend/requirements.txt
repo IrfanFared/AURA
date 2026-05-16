@@ -18,4 +18,4 @@ passlib[bcrypt]
 python-dotenv
 bcrypt==4.0.1
 python-multipart
-google-generativeai
+google-cloud-aiplatform
