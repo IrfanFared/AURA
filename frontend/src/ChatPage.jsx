@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Send, Loader2, Bot, Info } from 'lucide-react';
 import { useTheme } from './ThemeContext';
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1').trim();
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://aura-backend-897592630558.asia-southeast1.run.app/api/v1').trim();
 
 const ChatPage = ({ user }) => {
   const { isDark } = useTheme();

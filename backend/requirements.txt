@@ -1,8 +1,16 @@
-fastapi
+google-genai
+python-dotenv
+# Auth dependencies
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt==4.0.1
+python-multipart
+# Cloud Run / Prod needs
 uvicorn
-sqlalchemy
+fastapi
 pydantic
 pydantic[email]
+sqlalchemy
 scipy
 pandas
 prophet
@@ -12,10 +20,3 @@ pytest
 httpx
 pytest-asyncio
 cryptography
-# Auth dependencies
-python-jose[cryptography]
-passlib[bcrypt]
-python-dotenv
-bcrypt==4.0.1
-python-multipart
-google-cloud-aiplatform

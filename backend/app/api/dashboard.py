@@ -56,7 +56,7 @@ async def get_dashboard_data(user_id: str, account_no: str = "1234567890", db: S
         
         # Ensure vault has a seeded balance for demo
         if user_id not in _vault_executor.active_vaults:
-            _vault_executor.active_vaults[user_id] = 5000000.0
+            _vault_executor.active_vaults[user_id] = 0.0
         
         # Override hedge vault_balance with the persistent singleton value
         result["hedge"]["vault_balance"] = _vault_executor.active_vaults.get(user_id, 0.0)

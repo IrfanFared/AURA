@@ -6,7 +6,7 @@ import { useTheme } from './ThemeContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1').trim();
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://aura-backend-897592630558.asia-southeast1.run.app/api/v1').trim();
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
 /* ─── Google Sign-In Script Loader ─────────────────────────────────────────── */

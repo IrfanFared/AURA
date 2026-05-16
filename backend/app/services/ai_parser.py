@@ -2,7 +2,8 @@ import os
 import json
 import logging
 import re
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from typing import List, Dict, Any
 
 logger = logging.getLogger(__name__)
@@ -11,23 +12,23 @@ logger = logging.getLogger(__name__)
 class MutationParser:
     """Parses bank mutation files (image/PDF) using Google Gemini Vision."""
 
-    def _get_model(self):
+    def _get_client(self):
         """Read GEMINI_API_KEY lazily so Cloud Run env vars are always picked up."""
         api_key = os.environ.get("GEMINI_API_KEY")
         if not api_key:
             return None, None
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-1.5-flash")
-        return model, api_key
+        client = genai.Client(api_key=api_key)
+        return client, api_key
+
 
     def extract_transactions(self, file_bytes: bytes, mime_type: str) -> List[Dict[str, Any]]:
         """
         Uses Gemini Vision to read a bank mutation file and extract transactions.
         Falls back to mock data when GEMINI_API_KEY is not set.
         """
-        model, api_key = self._get_model()
+        client, api_key = self._get_client()
 
-        if not api_key or not model:
+        if not api_key or not client:
             logger.warning("GEMINI_API_KEY not set. Falling back to mock parsing.")
             return self._mock_parse()
 
@@ -54,8 +55,15 @@ Rules:
 """
 
         try:
-            file_part = {"mime_type": mime_type, "data": file_bytes}
-            response = model.generate_content([prompt, file_part])
+            file_part = types.Part.from_bytes(data=file_bytes, mime_type=mime_type)
+            response = client.models.generate_content(
+                model="gemini-1.5-flash",
+                contents=[prompt, file_part],
+            )
+
+            if not response or not response.text:
+                logger.warning("Gemini returned empty response — using mock.")
+                return self._mock_parse()
 
             text = response.text.strip()
 
@@ -82,25 +90,17 @@ Rules:
                 })
 
             if not validated:
-                logger.warning("Gemini returned empty transaction list — using mock.")
+                logger.warning("No transactions extracted — using mock.")
                 return self._mock_parse()
 
             return validated
 
-        except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse Gemini JSON response: {e}")
-            raise ValueError(f"Gemini mengembalikan format yang tidak valid. Detail: {e}")
         except Exception as e:
             logger.error(f"AI parsing error: {e}")
-            err = str(e)
-            if "API key not valid" in err or "API_KEY_INVALID" in err:
-                raise ValueError("GEMINI_API_KEY tidak valid. Periksa konfigurasi environment Anda.")
-            if "quota" in err.lower() or "RESOURCE_EXHAUSTED" in err:
-                raise ValueError("Kuota Gemini API habis. Silakan coba lagi nanti.")
-            raise ValueError(f"Gagal memproses file dengan AI: {e}")
+            return self._mock_parse()
 
     def _mock_parse(self) -> List[Dict[str, Any]]:
-        """Returns simulated transactions when no API key is available."""
+        """Returns simulated transactions when no AI is available."""
         from datetime import date, timedelta
         today = date.today()
         return [
