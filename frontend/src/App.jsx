@@ -116,8 +116,15 @@ const App = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(() => !!localStorage.getItem('aura_access_token'));
+  const [user, setUser] = useState(() => {
+    try {
+      const savedUser = localStorage.getItem('aura_user');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch {
+      return null;
+    }
+  });
   const [activeTab, setActiveTab] = useState('overview');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [auditLogs, setAuditLogs] = useState([]);
@@ -195,7 +202,7 @@ const App = () => {
         console.error("Error fetching data:", error);
         setError("Gagal memuat data riil Anda. Hubungkan rekening Bank/POS untuk memulai.");
       } finally {
-        setTimeout(() => setLoading(false), 1500);
+        setLoading(false);
       }
     };
     if (isLoggedIn && user) fetchData();
@@ -350,17 +357,7 @@ const App = () => {
     }
   };
 
-  // Restore session dari localStorage saat app load
-  useEffect(() => {
-    const token = localStorage.getItem('aura_access_token');
-    const savedUser = localStorage.getItem('aura_user');
-    if (token && savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-        setIsLoggedIn(true);
-      } catch {}
-    }
-  }, []);
+
 
   const handleLogin = (tokenData) => {
     const u = tokenData.user || tokenData;
@@ -1196,9 +1193,9 @@ const App = () => {
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<LandingPage onNavigateToAuth={() => navigate('/login')} />} />
-          <Route path="/login" element={<AuthPage mode="login" onLogin={handleLogin} onBack={() => navigate('/')} />} />
-          <Route path="/register" element={<AuthPage mode="register" onLogin={handleLogin} onBack={() => navigate('/')} />} />
-          <Route path="/auth/callback" element={<AuthPage mode="callback" onLogin={handleLogin} onBack={() => navigate('/')} />} />
+          <Route path="/login" element={isLoggedIn ? <Navigate to="/overview" replace /> : <AuthPage mode="login" onLogin={handleLogin} onBack={() => navigate('/')} />} />
+          <Route path="/register" element={isLoggedIn ? <Navigate to="/overview" replace /> : <AuthPage mode="register" onLogin={handleLogin} onBack={() => navigate('/')} />} />
+          <Route path="/auth/callback" element={isLoggedIn ? <Navigate to="/overview" replace /> : <AuthPage mode="callback" onLogin={handleLogin} onBack={() => navigate('/')} />} />
           
           {['overview', 'analytics', 'vault', 'reports', 'chat'].map(tab => (
             <Route key={tab} path={`/${tab}`} element={isLoggedIn ? renderDashboard() : <Navigate to="/login" />} />
