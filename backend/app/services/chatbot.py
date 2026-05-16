@@ -1,34 +1,35 @@
-import os
 import logging
-import google.generativeai as genai
+import vertexai
+from vertexai.generative_models import GenerativeModel
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
 
 class ChatbotService:
-    """AURA Virtual CFO Chatbot powered by Google Gemini."""
+    """AURA Virtual CFO Chatbot powered by Google Vertex AI."""
 
-    def _get_model(self):
-        """Get a configured Gemini model, reading API key lazily per call."""
-        api_key = os.environ.get("GEMINI_API_KEY")
-        if not api_key:
-            return None, None
-        genai.configure(api_key=api_key)
-        try:
-            model = genai.GenerativeModel("gemini-1.5-flash")
-        except Exception:
-            model = genai.GenerativeModel("gemini-pro")
-        return model, api_key
+    _initialized = False
+
+    def _ensure_initialized(self):
+        """Lazy initialization for Vertex AI."""
+        if not ChatbotService._initialized:
+            try:
+                vertexai.init(
+                    project=settings.GCP_PROJECT_ID,
+                    location=settings.GCP_LOCATION
+                )
+                ChatbotService._initialized = True
+            except Exception as e:
+                logger.error(f"Failed to initialize Vertex AI: {e}")
+                raise
 
     def generate_response(self, user_message: str, context: dict) -> str:
-        model, api_key = self._get_model()
-
-        if not api_key or not model:
-            return (
-                "Maaf, fitur AI Chatbot belum dikonfigurasi. "
-                "GEMINI_API_KEY tidak ditemukan di environment."
-            )
-
+        try:
+            self._ensure_initialized()
+        except Exception as e:
+            return f"Maaf, sistem AI sedang mengalami kendala inisialisasi. (Error: {str(e)[:50]}...)"
+        
         system_prompt = f"""
 Anda adalah AURA Assistant, konsultan keuangan virtual (Virtual CFO) untuk UMKM.
 Gunakan bahasa Indonesia yang ramah, profesional, namun mudah dipahami oleh orang awam.
@@ -49,26 +50,30 @@ Panduan menjawab:
 2. Jika kas minus, sarankan mereka berhemat. Jika surplus, sarankan menabung di Smart Vault.
 3. Tetap ringkas dan praktis.
 """
+        
         try:
+            model = GenerativeModel("gemini-1.5-flash-001")
             prompt = f"{system_prompt}\n\nPertanyaan Pengguna: {user_message}\nJawaban:"
             response = model.generate_content(prompt)
-            return response.text
+            
+            if response and response.text:
+                return response.text
+            else:
+                return "Maaf, saya tidak dapat memberikan jawaban saat ini. Silakan coba beberapa saat lagi."
+                
         except Exception as e:
-            logger.error(f"Chatbot Gemini error: {e}")
-            err = str(e)
-            if "API has not been used" in err or "SERVICE_DISABLED" in err:
+            logger.error(f"Vertex AI generation failed: {e}")
+            
+            error_msg = str(e).lower()
+            if "permission denied" in error_msg or "403" in error_msg:
                 return (
-                    "Maaf, Gemini API belum diaktifkan di Google Cloud Project Anda. "
-                    "Silakan aktifkan Generative Language API di GCP Console."
+                    "Maaf, akses ke layanan AI ditolak. "
+                    "Pastikan Vertex AI API telah diaktifkan di Google Cloud Console."
                 )
-            if "API key not valid" in err or "API_KEY_INVALID" in err:
+            if "quota" in error_msg or "429" in error_msg:
                 return (
-                    "Maaf, GEMINI_API_KEY yang digunakan tidak valid. "
-                    "Silakan periksa kembali konfigurasi environment Anda."
+                    "Maaf, kuota layanan AI saat ini sedang penuh. "
+                    "Silakan coba lagi beberapa saat lagi."
                 )
-            if "quota" in err.lower() or "RESOURCE_EXHAUSTED" in err:
-                return (
-                    "Maaf, kuota Gemini API Anda telah habis. "
-                    "Silakan cek Google AI Studio untuk detail penggunaan."
-                )
-            return "Maaf, saya sedang mengalami kendala teknis. Silakan coba lagi dalam beberapa saat."
+            
+            return f"Maaf, saya sedang mengalami kendala teknis (Error: {str(e)[:50]}...). Silakan coba lagi nanti."
